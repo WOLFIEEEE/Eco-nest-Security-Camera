@@ -1,5 +1,5 @@
 # Eco-nest-Security-Camera
-
+curl -fsSL https://tailscale.com/install.sh | sh
 EcoNest Security Camera is a Python-based security system designed for Raspberry Pi 4 using a USB camera. This system streams live video to a public IP, allows remote access with password protection, stores recordings locally for the last 12 hours in 30-minute chunks, and detects anomalies by capturing photos when unusual activity is detected.
 
 ## Table of Contents
