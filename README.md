@@ -4,6 +4,8 @@ EcoNest Security Camera is a Python-based security system designed for Raspberry
 
 ## Table of Contents
 
+https://apple-buffet-0e2.notion.site/18981de89fa48057beabf61464123291
+
 - [Features](#features)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
