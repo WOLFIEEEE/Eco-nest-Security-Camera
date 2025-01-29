@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>EcoNest Security Camera - Page Not Found</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="EcoNest Logo" height="40">
+            </div>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/camera">Live Camera</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="error-page">
+            <h1>404 - Page Not Found</h1>
+            <p>Oops! The page you're looking for doesn't exist.</p>
+            <a href="/" class="btn">Go Back Home</a>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; {{ current_year }} EcoNest. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Dynamically set the current year in the footer
+        document.querySelector('footer p').innerHTML = `&copy; ${new Date().getFullYear()} EcoNest. All rights reserved.`;
+    </script>
+</body>
+</html>

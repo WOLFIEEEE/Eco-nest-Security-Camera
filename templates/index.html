@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>EcoNest Security Camera - Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="EcoNest Logo" height="40">
+            </div>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/camera">Live Camera</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h1>Welcome to EcoNest Security Camera</h1>
+            <p>Monitor your space with our advanced security system. View live feeds, review recordings, and stay informed with real-time anomaly detection.</p>
+            <a href="/camera" class="btn">View Live Camera</a>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; {{ current_year }} EcoNest. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Dynamically set the current year in the footer
+        document.querySelector('footer p').innerHTML = `&copy; ${new Date().getFullYear()} EcoNest. All rights reserved.`;
+    </script>
+</body>
+</html>
