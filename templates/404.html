@@ -10,7 +10,7 @@
     <header>
         <nav class="navbar">
             <div class="logo">
-                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="EcoNest Logo" height="40">
+                <a href="/" class="logo-text">EcoNest</a>
             </div>
             <ul class="nav-links">
                 <li><a href="/">Home</a></li>
@@ -28,12 +28,12 @@
     </main>
 
     <footer>
-        <p>&copy; {{ current_year }} EcoNest. All rights reserved.</p>
+        <p>&copy; <span id="current-year"></span> EcoNest. All rights reserved.</p>
     </footer>
 
     <script>
         // Dynamically set the current year in the footer
-        document.querySelector('footer p').innerHTML = `&copy; ${new Date().getFullYear()} EcoNest. All rights reserved.`;
+        document.getElementById('current-year').textContent = new Date().getFullYear();
     </script>
 </body>
 </html>

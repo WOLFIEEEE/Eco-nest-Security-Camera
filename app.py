@@ -4,7 +4,7 @@ import os
 import logging
 import threading
 from datetime import datetime
-from flask import Flask, Response, request, send_from_directory, jsonify, g, render_template
+from flask import Flask, Response, request, send_from_directory, jsonify, g, render_template, abort, send_file
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
 from queue import Queue
@@ -17,10 +17,10 @@ VIDEO_STORAGE_DIR = 'videos'            # Directory to store video files
 ANOMALY_STORAGE_DIR = 'anomalies'       # Directory to store anomaly photos
 VIDEO_DURATION = 30 * 60                # Duration of each video chunk (30 minutes)
 MAX_VIDEO_DURATION = 12 * 60 * 60       # Keep recordings for 12 hours
-MAX_ANOMY_IMAGES = 2000                  # Keep up to 2000 anomaly images
+MAX_ANOMALY_IMAGES = 2000                # Keep up to 2000 anomaly images
 FRAME_WIDTH = 640                        # Width of the video frame
 FRAME_HEIGHT = 480                       # Height of the video frame
-FPS = 10                                 # Reduced Frames per second for recording and streaming
+FPS = 10                                 # Frames per second for recording and streaming
 # User credentials
 USERS = {
     'sneh': generate_password_hash('bhat'),
@@ -152,7 +152,7 @@ def enhance_frame(frame):
 def manage_storage():
     """
     1) Deletes video files older than MAX_VIDEO_DURATION (12 hours).
-    2) Ensures we don't store more than MAX_ANOMY_IMAGES (2000).
+    2) Ensures we don't store more than MAX_ANOMALY_IMAGES (2000).
     3) Also ensures anomaly photos older than MAX_VIDEO_DURATION get removed.
     """
     now = time.time()
@@ -205,13 +205,13 @@ def manage_storage():
         except Exception as e:
             logging.error(f"Error parsing anomaly filename '{base}': {e}")
 
-    # If more than MAX_ANOMY_IMAGES remain, remove oldest
+    # If more than MAX_ANOMALY_IMAGES remain, remove oldest
     anomaly_files = [os.path.join(ANOMALY_STORAGE_DIR, f) for f in os.listdir(ANOMALY_STORAGE_DIR)
                      if f.startswith("anomaly_") and f.endswith(".jpg")]
-    if len(anomaly_files) > MAX_ANOMY_IMAGES:
+    if len(anomaly_files) > MAX_ANOMALY_IMAGES:
         # Sort again (latest first)
         anomaly_files.sort(key=lambda x: extract_time(x), reverse=True)
-        excess = len(anomaly_files) - MAX_ANOMY_IMAGES
+        excess = len(anomaly_files) - MAX_ANOMALY_IMAGES
         for i in range(excess):
             os.remove(anomaly_files[-1])  # Remove the oldest
             logging.info(f"Deleted anomaly file to maintain max count: {anomaly_files[-1]}")
@@ -288,11 +288,53 @@ def get_anomalies():
     end = start + per_page
     paginated_files = anomaly_files[start:end]
 
-    # Generate URLs
-    images = [{'url': f'/anomalies/{filename}'} for filename in paginated_files]
+    # Generate URLs and extract timestamps
+    images = []
+    for filename in paginated_files:
+        file_path = os.path.join(ANOMALY_STORAGE_DIR, filename)
+        timestamp_str = filename.replace("anomaly_", "").replace(".jpg", "")
+        try:
+            timestamp = datetime.strptime(timestamp_str, "%Y%m%d_%H%M%S")
+            formatted_time = timestamp.strftime("%Y-%m-%d %H:%M:%S")
+        except:
+            formatted_time = "Unknown"
+        images.append({
+            'url': f'/anomalies/{filename}',
+            'filename': filename,
+            'timestamp': formatted_time
+        })
 
     logging.info(f"Client '{username}' fetched anomalies: page {page}, per_page {per_page}")
     return jsonify({'images': images})
+
+@app.route('/anomaly/<filename>')
+@auth.login_required
+def anomaly_detail(filename):
+    """
+    Route to display detailed information about a specific anomaly.
+    """
+    username = g.get('user', 'User')
+    logging.info(f"Client '{username}' requested anomaly detail for: {filename}")
+    
+    # Validate filename
+    if not (filename.startswith("anomaly_") and filename.endswith(".jpg")):
+        logging.warning(f"Invalid anomaly filename requested: {filename}")
+        abort(404)
+    
+    # Extract timestamp
+    timestamp_str = filename.replace("anomaly_", "").replace(".jpg", "")
+    try:
+        timestamp = datetime.strptime(timestamp_str, "%Y%m%d_%H%M%S")
+        formatted_time = timestamp.strftime("%Y-%m-%d %H:%M:%S")
+    except:
+        formatted_time = "Unknown"
+    
+    file_path = os.path.join(ANOMALY_STORAGE_DIR, filename)
+    if not os.path.exists(file_path):
+        logging.warning(f"Anomaly file does not exist: {file_path}")
+        abort(404)
+    
+    return render_template('anomaly_detail.html', filename=filename, timestamp=formatted_time)
 
 ###############################################################################
 # Frame Generator
@@ -407,9 +449,10 @@ def detect_anomalies():
             if now - last_capture_time >= ANOMALY_COOLDOWN:
                 # Save anomaly image
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                anomaly_filename = os.path.join(ANOMALY_STORAGE_DIR, f"anomaly_{timestamp}.jpg")
-                cv2.imwrite(anomaly_filename, frame)
-                logging.info(f"Anomaly detected! Photo saved: {anomaly_filename}")
+                anomaly_filename = f"anomaly_{timestamp}.jpg"
+                anomaly_filepath = os.path.join(ANOMALY_STORAGE_DIR, anomaly_filename)
+                cv2.imwrite(anomaly_filepath, frame)
+                logging.info(f"Anomaly detected! Photo saved: {anomaly_filepath}")
                 last_capture_time = now
             else:
                 logging.debug("Anomaly detected but still in cooldown.")

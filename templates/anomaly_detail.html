@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>EcoNest Security Camera - Live Feed</title>
+    <title>EcoNest Security Camera - Anomaly Detail</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
@@ -21,21 +21,16 @@
     </header>
 
     <main>
-        <section class="live-feed">
-            <h2>Live Camera Feed</h2>
-            <div class="video-container">
-                <img src="{{ url_for('video_feed') }}" alt="Live Camera Feed" id="live-video">
+        <section class="anomaly-detail">
+            <h2>Anomaly Detected</h2>
+            <div class="anomaly-image-container">
+                <img src="{{ url_for('get_anomaly_image', filename=filename) }}" alt="Anomaly Image" class="anomaly-full-image">
             </div>
-        </section>
-
-        <section class="anomalies-section">
-            <h2>Recent Anomalies</h2>
-            <div class="anomalies-container">
-                <div id="anomalies-grid" class="anomalies-grid">
-                    <!-- Anomaly images will be appended here -->
-                </div>
-                <button id="show-more" class="btn">Show More</button>
+            <div class="anomaly-info">
+                <p><strong>Timestamp:</strong> {{ timestamp }}</p>
+                <a href="{{ url_for('get_anomaly_image', filename=filename) }}" download class="btn">Download Image</a>
             </div>
+            <a href="/camera" class="btn back-btn">Back to Live Camera</a>
         </section>
     </main>
 
@@ -43,6 +38,9 @@
         <p>&copy; <span id="current-year"></span> EcoNest. All rights reserved.</p>
     </footer>
 
-    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+    <script>
+        // Dynamically set the current year in the footer
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+    </script>
 </body>
 </html>

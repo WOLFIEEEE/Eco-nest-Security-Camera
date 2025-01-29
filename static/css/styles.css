@@ -1,9 +1,14 @@
-/* General Styles */
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f4f6f9;
-    margin: 0;
-    padding: 0;
+    color: #343a40;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -14,34 +19,35 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #343a40;
+    background-color: #1a1a2e;
     padding: 10px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
-.navbar .logo img {
-    height: 40px;
+.logo-text {
+    color: #e94560;
+    font-size: 24px;
+    font-weight: bold;
+    text-decoration: none;
 }
 
 .nav-links {
     list-style: none;
     display: flex;
-    margin: 0;
-    padding: 0;
-}
-
-.nav-links li {
-    margin-left: 20px;
+    gap: 20px;
 }
 
 .nav-links a {
-    color: #f8f9fa;
+    color: #f0f0f0;
     text-decoration: none;
     font-size: 16px;
     transition: color 0.3s ease;
 }
 
 .nav-links a:hover {
-    color: #adb5bd;
+    color: #e94560;
 }
 
 /* Main Content Styles */
@@ -50,23 +56,26 @@ main {
     padding: 20px;
 }
 
+/* Hero Section */
 .hero {
-    text-align: center;
-    padding: 60px 20px;
     background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 60px 20px;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    text-align: center;
+    margin-bottom: 40px;
 }
 
 .hero h1 {
-    color: #343a40;
+    font-size: 36px;
     margin-bottom: 20px;
+    color: #1a1a2e;
 }
 
 .hero p {
-    color: #6c757d;
-    margin-bottom: 30px;
     font-size: 18px;
+    margin-bottom: 30px;
+    color: #6c757d;
 }
 
 .btn {
@@ -74,27 +83,28 @@ main {
     padding: 12px 24px;
     font-size: 16px;
     color: #ffffff;
-    background-color: #28a745;
+    background-color: #e94560;
     border: none;
-    border-radius: 4px;
+    border-radius: 25px;
     text-decoration: none;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .btn:hover {
-    background-color: #218838;
+    background-color: #d6336c;
+    transform: translateY(-2px);
 }
 
-/* Live Feed Styles */
+/* Live Feed Section */
 .live-feed {
-    margin-top: 40px;
+    margin-bottom: 60px;
 }
 
 .live-feed h2 {
-    color: #343a40;
-    margin-bottom: 20px;
     text-align: center;
+    margin-bottom: 20px;
+    color: #1a1a2e;
 }
 
 .video-container {
@@ -107,44 +117,79 @@ main {
     width: 100%;
     max-width: 800px;
     height: auto;
-    border: 2px solid #343a40;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 4px solid #e94560;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
 }
 
-/* Anomalies Section Styles */
+.video-container img:hover {
+    transform: scale(1.02);
+}
+
+/* Anomalies Section */
 .anomalies-section {
-    margin-top: 60px;
+    margin-top: 40px;
 }
 
 .anomalies-section h2 {
-    color: #343a40;
-    margin-bottom: 20px;
     text-align: center;
+    margin-bottom: 20px;
+    color: #1a1a2e;
 }
 
 .anomalies-container {
-    max-width: 1000px;
+    max-width: 1200px;
     margin: 0 auto;
 }
 
 .anomalies-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
 }
 
 .anomaly-image {
     width: 100%;
     height: auto;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
+    border: 2px solid #e94560;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .anomaly-image:hover {
     transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+/* Anomaly Detail Page */
+.anomaly-detail {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.anomaly-full-image {
+    width: 100%;
+    max-width: 800px;
+    height: auto;
+    border: 4px solid #e94560;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.anomaly-info {
+    margin-bottom: 30px;
+}
+
+.back-btn {
+    background-color: #6c757d;
+}
+
+.back-btn:hover {
+    background-color: #5a6268;
 }
 
 /* Error Page Styles */
@@ -154,40 +199,42 @@ main {
 }
 
 .error-page h1 {
-    color: #dc3545;
+    font-size: 48px;
+    color: #e94560;
     margin-bottom: 20px;
 }
 
 .error-page p {
+    font-size: 20px;
     color: #6c757d;
     margin-bottom: 30px;
-    font-size: 18px;
 }
 
 /* Footer Styles */
 footer {
-    background-color: #343a40;
-    color: #f8f9fa;
+    background-color: #1a1a2e;
+    color: #f0f0f0;
     text-align: center;
     padding: 15px 20px;
+}
+
+footer p {
+    margin: 0;
+    font-size: 14px;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
     .nav-links {
         flex-direction: column;
-        align-items: center;
+        gap: 10px;
     }
 
-    .nav-links li {
-        margin: 10px 0;
-    }
-
-    .video-container img {
+    .video-container img, .anomaly-full-image {
         max-width: 100%;
     }
 
     .anomalies-grid {
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     }
 }
