@@ -4,7 +4,7 @@ import os
 import logging
 import threading
 from datetime import datetime
-from flask import Flask, Response, request, send_from_directory, jsonify, g, render_template, abort, send_file
+from flask import Flask, Response, request, send_from_directory, jsonify, g, render_template, abort
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
 from queue import Queue
@@ -17,10 +17,10 @@ VIDEO_STORAGE_DIR = 'videos'            # Directory to store video files
 ANOMALY_STORAGE_DIR = 'anomalies'       # Directory to store anomaly photos
 VIDEO_DURATION = 30 * 60                # Duration of each video chunk (30 minutes)
 MAX_VIDEO_DURATION = 12 * 60 * 60       # Keep recordings for 12 hours
-MAX_ANOMALY_IMAGES = 2000                # Keep up to 2000 anomaly images
-FRAME_WIDTH = 640                        # Width of the video frame
-FRAME_HEIGHT = 480                       # Height of the video frame
-FPS = 10                                 # Frames per second for recording and streaming
+MAX_ANOMALY_IMAGES = 2000               # Keep up to 2000 anomaly images
+FRAME_WIDTH = 640                       # Width of the video frame
+FRAME_HEIGHT = 480                      # Height of the video frame
+FPS = 10                                # Frames per second for recording and streaming
 # User credentials
 USERS = {
     'sneh': generate_password_hash('bhat'),
@@ -127,28 +127,6 @@ camera = SharedCamera(camera_index=CAMERA_INDEX)
 ###############################################################################
 # Helper Functions
 ###############################################################################
-def enhance_frame(frame):
-    """
-    Enhance the frame for better visibility in low-light conditions.
-    Applies histogram equalization and gamma correction.
-    """
-    # Convert to YUV color space
-    yuv = cv2.cvtColor(frame, cv2.COLOR_BGR2YUV)
-    
-    # Apply Histogram Equalization to the Y channel
-    yuv[:, :, 0] = cv2.equalizeHist(yuv[:, :, 0])
-    
-    # Convert back to BGR
-    enhanced_frame = cv2.cvtColor(yuv, cv2.COLOR_YUV2BGR)
-    
-    # Apply Gamma Correction
-    gamma = 1.5  # Adjust gamma value as needed
-    look_up_table = np.array([((i / 255.0) ** gamma) * 255
-                             for i in range(256)], dtype="uint8")
-    enhanced_frame = cv2.LUT(enhanced_frame, look_up_table)
-    
-    return enhanced_frame
-
 def manage_storage():
     """
     1) Deletes video files older than MAX_VIDEO_DURATION (12 hours).
@@ -215,6 +193,49 @@ def manage_storage():
         for i in range(excess):
             os.remove(anomaly_files[-1])  # Remove the oldest
             logging.info(f"Deleted anomaly file to maintain max count: {anomaly_files[-1]}")
+
+def is_night_time():
+    """
+    Check if the current time is between 9 PM and 5 AM.
+    """
+    now = datetime.now().time()
+    start_night = datetime.strptime("21:00", "%H:%M").time()
+    end_night = datetime.strptime("05:00", "%H:%M").time()
+    
+    if start_night <= now or now <= end_night:
+        return True
+    return False
+
+def enhance_frame(frame):
+    """
+    Enhance the frame for low-light conditions using histogram equalization,
+    gamma correction, and noise reduction. Optionally overlay the current time.
+    """
+    # Convert to YUV color space to apply histogram equalization on the luminance channel
+    yuv = cv2.cvtColor(frame, cv2.COLOR_BGR2YUV)
+    
+    # Histogram Equalization on the Y channel
+    yuv[:, :, 0] = cv2.equalizeHist(yuv[:, :, 0])
+    
+    # Convert back to BGR color space
+    equalized = cv2.cvtColor(yuv, cv2.COLOR_YUV2BGR)
+    
+    # Gamma Correction
+    gamma = 1.5  # Adjust gamma value as needed
+    look_up_table = np.empty((1, 256), dtype='uint8')
+    for i in range(256):
+        look_up_table[0, i] = np.clip(pow(i / 255.0, gamma) * 255.0, 0, 255)
+    gamma_corrected = cv2.LUT(equalized, look_up_table)
+    
+    # Noise Reduction using Gaussian Blur
+    denoised = cv2.GaussianBlur(gamma_corrected, (5, 5), 0)
+    
+    # Overlay current time (optional)
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cv2.putText(denoised, current_time, (10, FRAME_HEIGHT - 10),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+    
+    return denoised
 
 ###############################################################################
 # Flask Routes
@@ -342,6 +363,7 @@ def anomaly_detail(filename):
 def generate_frames():
     """
     Generator function that yields JPEG frames from the shared camera.
+    Enhances frames during night time (9 PM to 5 AM).
     """
     while True:
         frame = camera.get_frame()
@@ -350,8 +372,12 @@ def generate_frames():
             time.sleep(0.05)
             continue
 
-        # **Enhance the frame for low-light conditions**
-        enhanced = frame
+        # Check if it's night time
+        if is_night_time():
+            logging.debug("Night time detected. Enhancing frame for better visibility.")
+            enhanced = enhance_frame(frame)
+        else:
+            enhanced = frame
 
         # Encode frame as JPEG
         ret, buffer = cv2.imencode('.jpg', enhanced)
