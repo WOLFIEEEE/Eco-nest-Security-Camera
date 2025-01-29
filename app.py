@@ -351,7 +351,7 @@ def generate_frames():
             continue
 
         # **Enhance the frame for low-light conditions**
-        enhanced = enhance_frame(frame)
+        enhanced = frame
 
         # Encode frame as JPEG
         ret, buffer = cv2.imencode('.jpg', enhanced)
